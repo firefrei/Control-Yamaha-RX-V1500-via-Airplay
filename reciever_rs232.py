@@ -11,7 +11,7 @@ countdown_threads = list()
 
 def openConnection():
 	ser = serial.Serial("/dev/ttyUSB0", baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=1, xonxoff=0, rtscts=0)
-	ser.open()
+	#ser.open()
 	device_is_responing = False
 	if ser.isOpen():
 		while not device_is_responing:

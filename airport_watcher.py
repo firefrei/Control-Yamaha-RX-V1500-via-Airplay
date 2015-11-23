@@ -13,7 +13,7 @@ class AirplayWatcher(Thread):
       with open(PROC_TCP,'r') as f:
          for line in f:
             elements = line.lstrip().split(' ')
-            if (elements[1].endswith(":138A")) and (elements[3]=="01"):
+            if (((elements[1].endswith(":138A")) or elements[1].endswith(":8F3A")) and (elements[3]=="01")):
                airplay_active = True
                break
       self.airplay_active = airplay_active
