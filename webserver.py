@@ -7,7 +7,7 @@ from reciever_rs232 import *
 @route('/api/power/<state>')
 def power(state):
     if state != "state":
-        new_state = bool(state)
+        new_state = str_to_bool(state)
         if new_state:
             recieverOn()
         else:
@@ -28,7 +28,7 @@ def volume(action):
 
 @route('/api/mute/<action>')
 def volume(action):
-    new_state = bool(action)
+    new_state = str_to_bool(action)
     if new_state:
         recieverMute(True)
     else:
@@ -44,6 +44,13 @@ def volume(channel):
 
     if channel in channel_list:
         return recieverInputChannel(channel)
+
+
+def str_to_bool(s):
+    if s == 'True':
+         return True
+    elif s == 'False':
+         return False
 
 
 def webserver(port):

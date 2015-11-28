@@ -46,8 +46,8 @@ def recieverOn():
     # Turn on
     ser.write(formatCommand("07a1d"))
 
-    # Change input chanel to CD-R
-    ser.write(formatCommand("07a19"))
+    # Change input chanel to DVR-VCR2
+    ser.write(formatCommand("07a13"))
 
     print("Finished. Closing connection...")
     ser.close()
