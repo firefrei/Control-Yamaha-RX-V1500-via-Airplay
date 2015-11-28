@@ -2,81 +2,149 @@ import serial
 import multiprocessing
 from time import sleep
 
- ### FREI.media ###
- ### www.frei.media ### 
- 
+### FREI.media ###
+### www.frei.media ###
 
-RECIEVER_OFF_WAIT = 120	# seconds to wait before turning off reciever
+
+RECIEVER_OFF_WAIT = 120  # seconds to wait before turning off reciever
 countdown_threads = list()
 
+
 def openConnection():
-	ser = serial.Serial("/dev/ttyUSB0", baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=1, xonxoff=0, rtscts=0)
-	#ser.open()
-	device_is_responing = False
-	if ser.isOpen():
-		while not device_is_responing:
-			ser.write(b'\x11' + "000".encode() + b'\x03')
-			response = ser.read(200)
-			if response.find(b'\x03'):
-				device_is_responing = True
-			else:
-				print("Did not receive any response. Trying again...")
-			sleep(1)
-		print("Connection is open.")
-	else:
-		raise "Was not able to open connection!"
-	return ser
+    ser = serial.Serial("/dev/ttyUSB0", baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=1, xonxoff=0,
+                        rtscts=0)
+    # ser.open()
+    device_is_responing = False
+    if ser.isOpen():
+        while not device_is_responing:
+            ser.write(b'\x11' + "000".encode() + b'\x03')
+            response = ser.read(200)
+            if response.find(b'\x03'):
+                device_is_responing = True
+            else:
+                print("Did not receive any response. Trying again...")
+            sleep(1)
+        print("Connection is open.")
+    else:
+        raise "Was not able to open connection!"
+    return ser
+
 
 def formatCommand(command):
-	return bytes([2]) + command.encode() + bytes([3])
+    return bytes([2]) + command.encode() + bytes([3])
+
 
 def recieverOn():
-	ser = openConnection()
-	
-	# Stop turn off timers
-	if countdown_threads:
-		for timer in countdown_threads:
-			timer.terminate()
+    ser = openConnection()
 
-	print("Send command to TURN ON...")
-	# Turn on
-	ser.write(formatCommand("07a1d"))	
+    # Stop turn off timers
+    if countdown_threads:
+        for timer in countdown_threads:
+            timer.terminate()
 
-	# Change input chanel to CD-R
-	ser.write(formatCommand("07a19"))
+    print("Send command to TURN ON...")
+    # Turn on
+    ser.write(formatCommand("07a1d"))
 
-	print("Finished. Closing connection...")
-	ser.close()
+    # Change input chanel to CD-R
+    ser.write(formatCommand("07a19"))
+
+    print("Finished. Closing connection...")
+    ser.close()
+
 
 def recieverOff():
-	# Stop other timers
-	if countdown_threads:
-		for timer in countdown_threads:
-			timer.terminate()
+    # Stop other timers
+    if countdown_threads:
+        for timer in countdown_threads:
+            timer.terminate()
 
-	# start new timer
-	countdown = multiprocessing.Process(target=recieverOffCountdown, args=(RECIEVER_OFF_WAIT,))
-	countdown.start()
-	countdown_threads.append(countdown)
+    # start new timer
+    countdown = multiprocessing.Process(target=recieverOffCountdown, args=(RECIEVER_OFF_WAIT,))
+    countdown.start()
+    countdown_threads.append(countdown)
 
 
 def recieverOffDirect():
-	ser = openConnection()
+    ser = openConnection()
 
-	print("Send command to TURN OFF...")
-	ser.write(formatCommand("07a1e"))
+    print("Send command to TURN OFF...")
+    ser.write(formatCommand("07a1e"))
 
-	print("Finished. Closing connection...")
-	ser.close()
+    print("Finished. Closing connection...")
+    ser.close()
 
 
 def recieverOffCountdown(seconds):
-	print("Countdown started to TURN OFF in "+str(seconds)+"seconds...")
-	while seconds > 0:
-		seconds -= 1
-		sleep(1)
-	recieverOffDirect()
+    print("Countdown started to TURN OFF in " + str(seconds) + "seconds...")
+    while seconds > 0:
+        seconds -= 1
+        sleep(1)
+    recieverOffDirect()
 
+
+def recieverVolume(action):
+    ser = openConnection()
+
+    if action == "up":
+        print("Send command to VOLUME UP...")
+        ser.write(formatCommand("07a1a"))
+    else:
+        print("Send command to VOLUME DOWN...")
+        ser.write(formatCommand("07a1b"))
+
+    print("Finished. Closing connection...")
+    ser.close()
+
+
+def recieverMute(action=True):
+    ser = openConnection()
+
+    if action:
+        print("Send command to MUTE...")
+        ser.write(formatCommand("07ea2"))
+    else:
+        print("Send command to NOT MUTE...")
+        ser.write(formatCommand("07ea3"))
+
+    print("Finished. Closing connection...")
+    ser.close()
+
+
+def recieverInputChannel(channel):
+    code = ""
+    if channel == "phono":
+        code = "07a14"
+    elif channel == "cd":
+        code = "07a15"
+    elif channel == "tuner":
+        code = "07a16"
+    elif channel == "cdr":
+        code = "07a19"
+    elif channel == "md-tape":
+        code = "07ac9"
+    elif channel == "dvd":
+        code = "07ac1"
+    elif channel == "dtv":
+        code = "07a54"
+    elif channel == "cbl-sat":
+        code = "07ac0"
+    elif channel == "vcr1":
+        code = "07a0f"
+    elif channel == "dvr-vcr2":
+        code = "07a13"
+    elif channel == "vaux":
+        code = "07a55"
+
+    if code:
+        ser = openConnection()
+        print("Send command to SWITCH CHANNEL...")
+        ser.write(formatCommand(code))
+        print("Finished. Closing connection...")
+        ser.close()
+        return True
+    else:
+        return False
 
 
 """
