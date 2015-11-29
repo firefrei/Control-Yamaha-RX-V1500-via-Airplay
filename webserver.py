@@ -27,17 +27,18 @@ def volume(action):
 
 
 @route('/api/mute/<action>')
-def volume(action):
+def mute(action):
     new_state = str_to_bool(action)
     if new_state:
         recieverMute(True)
     else:
         recieverMute(False)
-    return str(True)
+
+    return str(new_state)
 
 
 @route('/api/input-channel/<channel>')
-def volume(channel):
+def input_channel(channel):
     channel_list = list(["phono", "cd", "tuner", "cdr", "md-tape", "dvd", "dtv", "cbl-sat", "vcr1", "dvr-vcr2", "vaux"])
     if channel == "list":
         return str(channel_list)
@@ -47,10 +48,10 @@ def volume(channel):
 
 
 def str_to_bool(s):
-    if s == 'True':
-         return True
-    elif s == 'False':
-         return False
+    if s == 'True' or s == 'true' or s == '1':
+        return True
+    else:
+        return False
 
 
 def webserver(port):
