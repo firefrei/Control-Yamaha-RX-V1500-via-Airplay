@@ -100,10 +100,10 @@ def recieverVolume(action):
 
     if action == "up":
         print("Send command to VOLUME UP...")
-        ser.write(formatCommand("07a1a")+formatCommand("07a1a")+formatCommand("07a1a"))
+        ser.write(formatCommand("07a1a"+"07a1a"+"07a1a"))
     else:
         print("Send command to VOLUME DOWN...")
-        ser.write(formatCommand("07a1b")+formatCommand("07a1b")+formatCommand("07a1b"))
+        ser.write(formatCommand("07a1b"+"07a1b"+"07a1b"))
 
 
 def recieverMute(action=True):
