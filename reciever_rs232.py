@@ -8,25 +8,40 @@ from time import sleep
 
 RECIEVER_OFF_WAIT = 120  # seconds to wait before turning off reciever
 countdown_threads = list()
-
+CONNECTION = serial.Serial()  # RS232-Connection
 
 def openConnection():
+    global CONNECTION
+
+    if CONNECTION.isOpen() is False:
+        CONNECTION = initConnection()
+        if CONNECTION.isOpen():
+            return CONNECTION
+        else:
+            return False
+    else:
+        return CONNECTION
+
+
+def initConnection():
     ser = serial.Serial("/dev/ttyUSB0", baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=1, xonxoff=0,
                         rtscts=0)
     # ser.open()
     device_is_responing = False
     if ser.isOpen():
+        global device_is_responing
         while not device_is_responing:
             ser.write(b'\x11' + "000".encode() + b'\x03')
             response = ser.read(200)
             if response.find(b'\x03'):
                 device_is_responing = True
+                break
             else:
                 print("Did not receive any response. Trying again...")
             sleep(1)
         print("Connection is open.")
     else:
-        raise "Was not able to open connection!"
+        return -1
     return ser
 
 
@@ -48,9 +63,6 @@ def recieverOn():
 
     # Change input chanel to DVR-VCR2
     ser.write(formatCommand("07a13"))
-
-    print("Finished. Closing connection...")
-    ser.close()
 
 
 def recieverOff():
@@ -93,9 +105,6 @@ def recieverVolume(action):
         print("Send command to VOLUME DOWN...")
         ser.write(formatCommand("07a1b"))
 
-    print("Finished. Closing connection...")
-    ser.close()
-
 
 def recieverMute(action=True):
     ser = openConnection()
@@ -106,9 +115,6 @@ def recieverMute(action=True):
     else:
         print("Send command to NOT MUTE...")
         ser.write(formatCommand("07ea3"))
-
-    print("Finished. Closing connection...")
-    ser.close()
 
 
 def recieverInputChannel(channel):
@@ -140,8 +146,6 @@ def recieverInputChannel(channel):
         ser = openConnection()
         print("Send command to SWITCH CHANNEL...")
         ser.write(formatCommand(code))
-        print("Finished. Closing connection...")
-        ser.close()
         return True
     else:
         return False
