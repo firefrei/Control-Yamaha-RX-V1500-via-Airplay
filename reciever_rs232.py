@@ -24,20 +24,27 @@ def openConnection():
 
 
 def initConnection():
+    global device_is_responing
+
     ser = serial.Serial("/dev/ttyUSB0", baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=1, xonxoff=0,
                         rtscts=0)
-    # ser.open()
+
+    connection_attemps = 0
     device_is_responing = False
     if ser.isOpen():
-        global device_is_responing
+        response = bytes()
         while not device_is_responing:
             ser.write(b'\x11' + "000".encode() + b'\x03')
             response = ser.read(200)
-            if response.find(b'\x03'):
+            if b'\x03' in response:
                 device_is_responing = True
                 break
             else:
                 print("Did not receive any response. Trying again...")
+            connection_attemps += 1
+            if connection_attemps > 10:
+                print("Could not etablish connection. Giving up...")
+                return False
             sleep(1)
         print("Connection is open.")
     else:
@@ -47,6 +54,19 @@ def initConnection():
 
 def formatCommand(command):
     return bytes([2]) + command.encode() + bytes([3])
+
+def recieverStatus():
+    ser = openConnection()
+
+    # send random (but existing!) code end evaluate response to get power state
+    ser.write(formatCommand("07eb1"))
+    response = ser.read(200)
+    if b'\x02002B01\x03' in response:
+        return True
+    elif b'\x02310002\x03' in response:
+        return False    
+    else:
+        raise("ERROR: Not recieved any response")
 
 
 def recieverOn():
