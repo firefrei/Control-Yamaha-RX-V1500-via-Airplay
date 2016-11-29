@@ -19,6 +19,9 @@ def power(state):
 
 @route('/api/volume/<action>')
 def volume(action):
+    if not recieverStatus():
+        return "ERROR"
+
     if action == "up":
         recieverVolume("up")
     else:
@@ -28,6 +31,9 @@ def volume(action):
 
 @route('/api/mute/<action>')
 def mute(action):
+    if not recieverStatus():
+        return "ERROR"
+
     new_state = str_to_bool(action)
     if new_state:
         recieverMute(True)
@@ -39,6 +45,9 @@ def mute(action):
 
 @route('/api/input-channel/<channel>')
 def input_channel(channel):
+    if not recieverStatus():
+        return "ERROR"
+        
     channel_list = list(["phono", "cd", "tuner", "cdr", "md-tape", "dvd", "dtv", "cbl-sat", "vcr1", "dvr-vcr2", "vaux"])
     if channel == "list":
         return str(channel_list)
