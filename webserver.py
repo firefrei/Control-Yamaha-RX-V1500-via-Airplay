@@ -14,7 +14,7 @@ def power(state):
             recieverOffDirect()
         return str(new_state)
 
-    return "-"
+    return str(recieverStatus())
 
 
 @route('/api/volume/<action>')
@@ -62,3 +62,6 @@ def webserver(port):
     except KeyboardInterrupt:
         print("server stopped!")
 
+
+if __name__ == "__main__":
+    webserver(1888)
