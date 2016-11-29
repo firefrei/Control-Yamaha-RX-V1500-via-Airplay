@@ -6,54 +6,66 @@ from reciever_rs232 import *
 
 @route('/api/power/<state>')
 def power(state):
-    if state != "state":
-        new_state = str_to_bool(state)
-        if new_state:
-            recieverOn()
-        else:
-            recieverOffDirect()
-        return str(new_state)
+    try:
+        if state != "state":
+            new_state = str_to_bool(state)
+            if new_state:
+                recieverOn()
+            else:
+                recieverOffDirect()
+            return str(new_state)
 
-    return str(recieverStatus())
+        return str(recieverStatus())
+    except:
+        return "ERROR"
 
 
 @route('/api/volume/<action>')
 def volume(action):
-    if not recieverStatus():
-        return "ERROR"
+    try:
+        if not recieverStatus():
+            return "ERROR"
 
-    if action == "up":
-        recieverVolume("up")
-    else:
-        recieverVolume("down")
-    return str(True)
+        if action == "up":
+            recieverVolume("up")
+        else:
+            recieverVolume("down")
+        return str(True)
+    except:
+        return "ERROR"
 
 
 @route('/api/mute/<action>')
 def mute(action):
-    if not recieverStatus():
+    try:
+        if not recieverStatus():
+            return "ERROR"
+
+        new_state = str_to_bool(action)
+        if new_state:
+            recieverMute(True)
+        else:
+            recieverMute(False)
+
+        return str(new_state)
+    except:
         return "ERROR"
-
-    new_state = str_to_bool(action)
-    if new_state:
-        recieverMute(True)
-    else:
-        recieverMute(False)
-
-    return str(new_state)
 
 
 @route('/api/input-channel/<channel>')
 def input_channel(channel):
-    if not recieverStatus():
-        return "ERROR"
-        
-    channel_list = list(["phono", "cd", "tuner", "cdr", "md-tape", "dvd", "dtv", "cbl-sat", "vcr1", "dvr-vcr2", "vaux"])
-    if channel == "list":
-        return str(channel_list)
+    try:
+        if not recieverStatus():
+            return "ERROR"
 
-    if channel in channel_list:
-        return recieverInputChannel(channel)
+        channel_list = list(["phono", "cd", "tuner", "cdr", "md-tape", "dvd", "dtv", "cbl-sat", "vcr1", "dvr-vcr2", "vaux"])
+        if channel == "list":
+            return str(channel_list)
+
+        if channel in channel_list:
+            return recieverInputChannel(channel)
+    except:
+        return "ERROR"
 
 
 def str_to_bool(s):
